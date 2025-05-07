@@ -30,4 +30,38 @@ class User {
     required this.reviews,
     required this.creationDate,
   });
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id'],
+      username: json['username'],
+      firstName: json['firstName'],
+      lastName: json['lastName'],
+      email: json['email'],
+      role: json['role'],
+      enabled: json['enabled'],
+      picture: json['picture'],
+      houses: (json['houses'] as List).map((e) => HousePreview.fromJson(e)).toList(),
+      rents: (json['rents'] as List).map((e) => Rent.fromJson(e)).toList(),
+      reviews: (json['reviews'] as List).map((e) => Review.fromJson(e)).toList(),
+      creationDate: json['creationDate'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'username': username,
+      'firstName': firstName,
+      'lastName': lastName,
+      'email': email,
+      'role': role,
+      'enabled': enabled,
+      'picture': picture,
+      'houses': houses.map((e) => e.toJson()).toList(),
+      'rents': rents.map((e) => e.toJson()).toList(),
+      'reviews': reviews.map((e) => e.toJson()).toList(),
+      'creationDate': creationDate,
+    };
+  }
 }

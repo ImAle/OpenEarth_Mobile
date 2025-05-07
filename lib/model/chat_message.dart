@@ -22,4 +22,35 @@ class ChatMessage {
     required this.read,
     required this.attachments,
   });
+
+  factory ChatMessage.fromJson(Map<String, dynamic> json) {
+    return ChatMessage(
+      id: json['id'],
+      senderId: json['senderId'],
+      senderUsername: json['senderUsername'],
+      receiverId: json['receiverId'],
+      receiverUsername: json['receiverUsername'],
+      textContent: json['textContent'],
+      timestamp: DateTime.parse(json['timestamp']),
+      read: json['read'],
+      attachments: (json['attachments'] as List)
+          .map((e) => MessageAttachment.fromJson(e))
+          .toList(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'senderId': senderId,
+      'senderUsername': senderUsername,
+      'receiverId': receiverId,
+      'receiverUsername': receiverUsername,
+      'textContent': textContent,
+      'timestamp': timestamp.toIso8601String(),
+      'read': read,
+      'attachments': attachments.map((e) => e.toJson()).toList(),
+    };
+  }
 }
+

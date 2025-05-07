@@ -14,4 +14,26 @@ class UserInfo {
     required this.picture,
     required this.creationDate,
   });
+
+  factory UserInfo.fromJson(Map<String, dynamic> json) {
+    return UserInfo(
+      id: json['id'],
+      username: json['username'],
+      firstName: json['firstName'],
+      lastName: json['lastName'],
+      picture: json['picture'],
+      creationDate: DateTime.parse(json['creationDate']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'username': username,
+      'firstName': firstName,
+      'lastName': lastName,
+      'picture': picture,
+      'creationDate': creationDate.toIso8601String(),
+    };
+  }
 }

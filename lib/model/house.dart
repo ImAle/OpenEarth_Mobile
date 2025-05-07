@@ -42,4 +42,50 @@ class House {
     required this.owner,
     required this.reviews,
   });
+
+  factory House.fromJson(Map<String, dynamic> json) {
+    return House(
+      id: json['id'],
+      title: json['title'],
+      description: json['description'],
+      guests: json['guests'],
+      bedrooms: json['bedrooms'],
+      beds: json['beds'],
+      bathrooms: json['bathrooms'],
+      price: (json['price'] as num).toDouble(),
+      currency: json['currency'],
+      location: json['location'],
+      latitude: (json['latitude'] as num).toDouble(),
+      longitude: (json['longitude'] as num).toDouble(),
+      category: json['category'],
+      status: json['status'],
+      creationDate: json['creationDate'],
+      pictures: (json['pictures'] as List).map((e) => Picture.fromJson(e)).toList(),
+      owner: UserInfo.fromJson(json['owner']),
+      reviews: (json['reviews'] as List).map((e) => Review.fromJson(e)).toList(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'guests': guests,
+      'bedrooms': bedrooms,
+      'beds': beds,
+      'bathrooms': bathrooms,
+      'price': price,
+      'currency': currency,
+      'location': location,
+      'latitude': latitude,
+      'longitude': longitude,
+      'category': category,
+      'status': status,
+      'creationDate': creationDate,
+      'pictures': pictures.map((e) => e.toJson()).toList(),
+      'owner': owner.toJson(),
+      'reviews': reviews.map((e) => e.toJson()).toList(),
+    };
+  }
 }

@@ -20,4 +20,30 @@ class ChatConversation {
     this.lastMessage,
     required this.unreadCount,
   });
+
+  factory ChatConversation.fromJson(Map<String, dynamic> json) {
+    return ChatConversation(
+      id: json['id'],
+      user1Id: json['user1Id'],
+      user1Username: json['user1Username'],
+      user2Id: json['user2Id'],
+      user2Username: json['user2Username'],
+      lastActivity: DateTime.parse(json['lastActivity']),
+      lastMessage: json['lastMessage'] != null ? ChatMessage.fromJson(json['lastMessage']) : null,
+      unreadCount: json['unreadCount'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user1Id': user1Id,
+      'user1Username': user1Username,
+      'user2Id': user2Id,
+      'user2Username': user2Username,
+      'lastActivity': lastActivity.toIso8601String(),
+      'lastMessage': lastMessage?.toJson(),
+      'unreadCount': unreadCount,
+    };
+  }
 }

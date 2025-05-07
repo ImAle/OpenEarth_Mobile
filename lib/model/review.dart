@@ -10,4 +10,22 @@ class Review {
     required this.houseId,
     required this.userId,
   });
+
+  factory Review.fromJson(Map<String, dynamic> json) {
+    return Review(
+      id: json['id'],
+      comment: json['comment'],
+      houseId: json['houseId'],
+      userId: json['userId'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'comment': comment,
+      'houseId': houseId,
+      'userId': userId,
+    };
+  }
 }

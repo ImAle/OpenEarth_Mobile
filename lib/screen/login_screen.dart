@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:openearth_mobile/configuration/environment.dart';
+import 'package:openearth_mobile/routes/routes.dart';
 import 'package:openearth_mobile/service/auth_service.dart';
 import 'dart:ui';
 
@@ -15,7 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
 
-  final Color primaryColor = const Color(0xFF1976D2); // Material blue
+  final Color primaryColor = environment.primaryColor;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -52,7 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await _authService.saveToken(response['token']);
 
       // Navigate to home screen
-      Navigator.of(context).pushReplacementNamed('/home');
+      Navigator.pushNamed(context, Routes.home);
     } catch (e) {
       setState(() {
         _errorMessage = 'Invalid email or password. Please try again.';
@@ -235,7 +237,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     padding: EdgeInsets.symmetric(vertical: size.height * 0.025),
                                     child: TextButton(
                                       onPressed: () {
-                                        Navigator.of(context).pushNamed('/register');
+                                        Navigator.pushNamed(context, Routes.register);
                                       },
                                       child: Text(
                                         'Are you not registered yet? Click here',

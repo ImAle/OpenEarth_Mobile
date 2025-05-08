@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:openearth_mobile/configuration/environment.dart';
 import 'package:openearth_mobile/model/house_preview.dart';
 import 'package:openearth_mobile/model/currency.dart';
 import 'package:openearth_mobile/service/currency_service.dart';
@@ -90,7 +91,7 @@ class _HouseCardState extends State<HouseCard> {
                         width: double.infinity,
                         decoration: BoxDecoration(
                           image: DecorationImage(
-                            image: NetworkImage(widget.house.pictures[index]),
+                            image: NetworkImage(environment.imageUrl + widget.house.pictures[index]),
                             fit: BoxFit.cover,
                           ),
                         ),

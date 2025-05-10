@@ -22,13 +22,13 @@ class HouseService {
 
     Map<String, String> queryParams = {};
 
-    if (location != null) queryParams['location'] = location;
+    if (location != null && location.isNotEmpty) queryParams['location'] = location;
     if (minPrice != null) queryParams['minPrice'] = minPrice.toString();
     if (maxPrice != null) queryParams['maxPrice'] = maxPrice.toString();
-    if (beds != null) queryParams['beds'] = beds.toString();
-    if (guests != null) queryParams['guests'] = guests.toString();
-    if (category != null) queryParams['category'] = category;
-    if (currency != null) queryParams['currency'] = currency;
+    if (beds != null && beds > 0) queryParams['beds'] = beds.toString();
+    if (guests != null && guests > 0) queryParams['guests'] = guests.toString();
+    if (category != null && category.isNotEmpty) queryParams['category'] = category;
+    if (currency != null && currency.isNotEmpty) queryParams['currency'] = currency;
 
     final uri = Uri.parse(baseUrl).replace(queryParameters: queryParams);
 
@@ -43,6 +43,8 @@ class HouseService {
             .toList();
 
         updateFilteredHouses(houses);
+      }else{
+        updateFilteredHouses([]);
       }
 
       return data;
@@ -108,8 +110,14 @@ class HouseService {
     final response = await http.get(uri);
 
     if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      return data.map((category) => category.toString()).toList();
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
+      final List<dynamic>? categories = data['categories'];
+      if (categories == null) {
+        throw Exception('Categories key not found or null');
+      }
+
+      return categories.map((category) => category.toString()).toList();
     } else {
       throw Exception('Failed to load categories');
     }

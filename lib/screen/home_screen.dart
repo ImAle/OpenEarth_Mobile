@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:openearth_mobile/configuration/environment.dart';
 import 'package:openearth_mobile/model/house_preview.dart';
+import 'package:openearth_mobile/routes/routes.dart';
+import 'package:openearth_mobile/widget/NavegationWidget.dart';
 import 'package:openearth_mobile/widget/house_card.dart';
 import 'package:openearth_mobile/service/house_service.dart';
 import 'package:openearth_mobile/widget/map_widget.dart';
@@ -86,10 +88,6 @@ class _HomeScreenState extends State<HomeScreen> {
           _hasError = true;
           _errorMessage = e.toString();
         });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error applying filters: ${e.toString()}')),
-        );
       }
     }
   }
@@ -99,6 +97,16 @@ class _HomeScreenState extends State<HomeScreen> {
       '/house',
       arguments: houseId,
     );
+  }
+
+  void _handleNavigation(int index) {
+    if (index == 0) {
+      return;
+    } else if (index == 1) {
+      //Navigator.pushNamed(context, Routes.chat);
+    } else if (index == 2) {
+      //Navigator.pushNamed(context, Routes.account);
+    }
   }
 
   void _toggleMapView() {
@@ -264,6 +272,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
+      ),
+      bottomNavigationBar: NavigationWidget(
+        currentIndex: 0, // home
+        onTap: _handleNavigation,
       ),
     );
   }

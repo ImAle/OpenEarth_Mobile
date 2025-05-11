@@ -11,7 +11,7 @@ class PaypalService {
 
   Future<dynamic> createPayment(double amount, String currency, String description) async {
     final url = Uri.parse(baseUrl + '/createPayment');
-    final token = _authService.retrieveToken();
+    final token = await _authService.retrieveToken();
 
     final headers = {
       'Authorization': token,
@@ -35,7 +35,7 @@ class PaypalService {
 
   Future<dynamic> capturePayment(String orderId) async {
     final url = Uri.parse(baseUrl + '/capturePayment');
-    final token = _authService.retrieveToken();
+    final token = await _authService.retrieveToken();
 
     // Get the stored rent data
     final prefs = await SharedPreferences.getInstance();

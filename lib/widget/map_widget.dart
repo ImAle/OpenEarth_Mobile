@@ -3,7 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:openearth_mobile/configuration/environment.dart';
 import 'package:openearth_mobile/model/house_preview.dart';
-import 'package:openearth_mobile/widget/House_map_card.dart';
+import 'package:openearth_mobile/widget/house_map_card.dart';
 
 class MapWidget extends StatefulWidget {
   final List<HousePreview> houses;

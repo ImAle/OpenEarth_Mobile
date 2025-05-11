@@ -12,7 +12,7 @@ class PictureService {
       queryParameters: {'id': id.toString()},
     );
 
-    final token = authService.retrieveToken();
+    final token = await authService.retrieveToken();
 
     final response = await http.delete(
       uri,

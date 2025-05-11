@@ -1,7 +1,11 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:openearth_mobile/model/currency.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CurrencyService {
+  static const String _currencyCodeKey = 'selected_currency_code';
+
   final ValueNotifier<Currency> currentCurrency = ValueNotifier<Currency>(
       Currency(
           code: 'EUR',
@@ -66,15 +70,52 @@ class CurrencyService {
     Currency(code: 'GHS', name: 'Ghanaian Cedi', symbol: '₵', continent: 'Africa')
   ];
 
-  // Continents en orden para mostrar
+  // Continents in order for showing
   final List<String> continentOrder = [
     'Europe', 'North America', 'South America', 'Asia', 'Oceania', 'Africa'
   ];
 
   late Map<String, List<Currency>> _currenciesByContinent;
 
+  // Alerts when it has been initialized completely
+  final Completer<void> _initCompleter = Completer<void>();
+
+  Future<void> get initialized => _initCompleter.future;
+
   CurrencyService() {
     _currenciesByContinent = _groupCurrenciesByContinent();
+    _loadSavedCurrency();
+  }
+
+  Future<void> _loadSavedCurrency() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedCode = prefs.getString(_currencyCodeKey);
+
+      if (savedCode != null) {
+        setCurrencyByCode(savedCode);
+      }
+
+      if (!_initCompleter.isCompleted) {
+        _initCompleter.complete();
+      }
+    } catch (e) {
+      // If error: EUR
+      debugPrint('Error loading saved currency: $e');
+
+      if (!_initCompleter.isCompleted) {
+        _initCompleter.complete();
+      }
+    }
+  }
+
+  Future<void> _saveCurrencyCode(String code) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_currencyCodeKey, code);
+    } catch (e) {
+      debugPrint('Error saving currency code: $e');
+    }
   }
 
   Map<String, List<Currency>> _groupCurrenciesByContinent() {
@@ -112,6 +153,7 @@ class CurrencyService {
 
   void setCurrentCurrency(Currency currency) {
     currentCurrency.value = currency;
+    _saveCurrencyCode(currency.code);
   }
 
   void setCurrencyByCode(String code) {
@@ -121,5 +163,14 @@ class CurrencyService {
     );
 
     currentCurrency.value = currency;
+    _saveCurrencyCode(currency.code);
+  }
+
+  String getCurrentCurrencyCode() {
+    return currentCurrency.value.code;
+  }
+
+  String getCurrentCurrencySymbol() {
+    return currentCurrency.value.symbol;
   }
 }

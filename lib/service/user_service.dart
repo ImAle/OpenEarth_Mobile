@@ -1,22 +1,18 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:flutter/material.dart';
 import 'package:openearth_mobile/configuration/environment.dart';
 import 'auth_service.dart';
 
 class UserService {
   final String baseUrl = environment.rootUrl + "/user";
   final AuthService _authService = AuthService();
-  final NavigatorState navigator;
-
-  UserService({required this.navigator});
 
   // GET /api/user
   Future<dynamic> getAllUsers() async {
     try {
       final url = Uri.parse(baseUrl);
-      final token = _authService.retrieveToken();
+      final token = await _authService.retrieveToken();
 
       final headers = {
         'Authorization': token
@@ -33,7 +29,7 @@ class UserService {
   // GET /api/user/profile
   Future<dynamic> getProfile() async {
     final url = Uri.parse(baseUrl + '/profile');
-    final token = _authService.retrieveToken();
+    final token = await _authService.retrieveToken();
 
     final headers = {
       'Authorization': token
@@ -59,7 +55,7 @@ class UserService {
   Future<dynamic> update(File picture) async {
     try {
       final url = Uri.parse(baseUrl + '/picture');
-      final token = _authService.retrieveToken();
+      final token = await _authService.retrieveToken();
 
       var request = http.MultipartRequest('PUT', url);
 

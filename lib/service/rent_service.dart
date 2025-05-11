@@ -11,7 +11,7 @@ class RentService {
   Future<dynamic> create(RentCreation rent) async {
     try {
       final url = Uri.parse(baseUrl + "/create");
-      final token = AuthService().retrieveToken();
+      final token = await AuthService().retrieveToken();
 
       final headers = {
         'Authorization': token,
@@ -31,7 +31,7 @@ class RentService {
   Future<dynamic> getMyRents() async {
     try {
       final url = Uri.parse(baseUrl + '/myRents');
-      final token = AuthService().retrieveToken();
+      final token = await AuthService().retrieveToken();
 
       final headers = {
         'Authorization': token
@@ -66,7 +66,7 @@ class RentService {
   Future<dynamic> getRentsOfMyHouses() async {
     try {
       final url = Uri.parse(baseUrl + '/houses');
-      final token = AuthService().retrieveToken();
+      final token = await AuthService().retrieveToken();
 
       final headers = {
         'Authorization': token
@@ -84,7 +84,7 @@ class RentService {
   Future<dynamic> cancel(int rentId) async {
     try {
       final url = Uri.parse(baseUrl + '/cancel');
-      final token = AuthService().retrieveToken();
+      final token = await AuthService().retrieveToken();
 
       final headers = {
         'Authorization': token,

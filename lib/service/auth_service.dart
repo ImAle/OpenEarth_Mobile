@@ -53,7 +53,7 @@ class AuthService {
   Future<dynamic> getRole() async {
     try {
       final uri = Uri.parse('$baseUrl/role');
-      final token = retrieveToken();
+      final token = await retrieveToken();
 
       final response = await http.get(
         uri,
@@ -137,13 +137,10 @@ class AuthService {
     await prefs.setString(key, token);
   }
 
-  String? getToken() {
-    SharedPreferences.getInstance().then((prefs) {
-      final token = prefs.getString(key);
-      return token != null ? 'Bearer $token' : null;
-    });
-
-    return null;
+  Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(key);
+    return token != null ? 'Bearer $token' : null;
   }
 
   Future<int?> getMyId() async {
@@ -157,13 +154,11 @@ class AuthService {
     await prefs.remove(key);
   }
 
-  String retrieveToken() {
-    final token = getToken();
-
+  Future<String> retrieveToken() async {
+    final token = await getToken();
     if (token == null) {
       throw Exception('You are not logged in');
     }
-
     return token;
   }
 

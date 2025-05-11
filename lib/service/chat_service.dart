@@ -30,7 +30,7 @@ class ChatService {
       return;
     }
 
-    final token = authService.retrieveToken();
+    final token = await authService.retrieveToken();
     if (token.isEmpty) {
       print('Error: Token no encontrado. Inicie sesión primero.');
       return;
@@ -135,7 +135,7 @@ class ChatService {
 
   Future<List<ChatConversation>> getConversations() async {
     final url = '$chatApiUrl/conversations';
-    final token = authService.retrieveToken();
+    final token = await authService.retrieveToken();
 
     final response = await http.get(
       Uri.parse(url),
@@ -152,7 +152,7 @@ class ChatService {
 
   Future<List<ChatMessage>> getMessageHistory(int otherUserId) async {
     final url = '$chatApiUrl/messages/$otherUserId';
-    final token = authService.retrieveToken();
+    final token = await authService.retrieveToken();
 
     final response = await http.get(
       Uri.parse(url),
@@ -169,7 +169,7 @@ class ChatService {
 
   Future<ChatMessage> sendTextMessage(int receiverId, String textContent) async {
     final url = '$chatApiUrl/send';
-    final token = authService.retrieveToken();
+    final token = await authService.retrieveToken();
 
     final response = await http.post(
       Uri.parse(url),
@@ -192,7 +192,7 @@ class ChatService {
 
   Future<ChatMessage> sendAudioMessage(int receiverId, dynamic audioFile) async {
     final url = '$chatApiUrl/send-audio';
-    final token = authService.retrieveToken();
+    final token = await authService.retrieveToken();
 
     final request = http.MultipartRequest('POST', Uri.parse(url));
     request.headers['Authorization'] = token;
@@ -216,7 +216,7 @@ class ChatService {
   Future<ChatMessage> sendMessageWithAttachments(
       int receiverId, String textContent, List<MessageAttachment> attachments) async {
     final url = '$chatApiUrl/send';
-    final token = authService.retrieveToken();
+    final token = await authService.retrieveToken();
 
     final response = await http.post(
       Uri.parse(url),
@@ -240,7 +240,7 @@ class ChatService {
 
   Future<MessageAttachment> uploadAttachment(dynamic file, String type) async {
     final url = '$chatApiUrl/upload-attachment';
-    final token = authService.retrieveToken();
+    final token = await authService.retrieveToken();
 
     final request = http.MultipartRequest('POST', Uri.parse(url));
     request.headers['Authorization'] = token;

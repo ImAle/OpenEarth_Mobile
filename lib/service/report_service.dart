@@ -12,7 +12,7 @@ class ReportService {
   Future<dynamic> create(ReportCreation report) async {
     try {
       final url = Uri.parse(baseUrl + '/create');
-      final token = _authService.retrieveToken();
+      final token = await _authService.retrieveToken();
 
       final headers = {
         'Authorization': token,
@@ -36,7 +36,7 @@ class ReportService {
   Future<dynamic> getAll() async {
     try {
       final url = Uri.parse(baseUrl);
-      final token = _authService.retrieveToken();
+      final token = await _authService.retrieveToken();
 
       final headers = {
         'Authorization': token,
@@ -54,7 +54,7 @@ class ReportService {
   Future<dynamic> getById(String id) async {
     try {
       final url = Uri.parse(baseUrl + '/get');
-      final token = _authService.retrieveToken();
+      final token = await _authService.retrieveToken();
 
       final headers = {
         'Authorization': token
@@ -78,7 +78,7 @@ class ReportService {
   Future<dynamic> delete(int id) async {
     try {
       final url = Uri.parse(baseUrl + '/delete');
-      final token = _authService.retrieveToken();
+      final token = await _authService.retrieveToken();
 
       final headers = {
         'Authorization': token

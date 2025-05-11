@@ -142,7 +142,7 @@ class HouseService {
       final queryParams = {'id': id.toString()};
       final uri = Uri.parse('$baseUrl/delete').replace(queryParameters: queryParams);
 
-      final token = AuthService().retrieveToken();
+      final token = await AuthService().retrieveToken();
 
       final response = await http.delete(
         uri,

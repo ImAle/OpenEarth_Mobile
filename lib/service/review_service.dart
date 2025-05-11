@@ -12,7 +12,7 @@ class ReviewService {
   Future<dynamic> create(ReviewCreation review) async {
     try {
       final url = Uri.parse(baseUrl + "/create");
-      final token = _authService.retrieveToken();
+      final token = await _authService.retrieveToken();
 
       final headers = {
         'Authorization': token,

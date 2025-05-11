@@ -1,15 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:openearth_mobile/configuration/environment.dart';
+import 'package:openearth_mobile/routes/routes.dart';
 
 class NavigationWidget extends StatelessWidget {
   final int currentIndex;
-  final Function(int) onTap;
 
   const NavigationWidget({
     Key? key,
     required this.currentIndex,
-    required this.onTap,
   }) : super(key: key);
+
+  void _navigate(BuildContext context, int index) {
+    if (index == currentIndex) return;
+
+    switch (index) {
+      case 0:
+        Navigator.pushNamed(context, Routes.home);
+        break;
+      case 1:
+        Navigator.pushNamed(context, Routes.chat);
+        break;
+      case 2:
+        Navigator.pushNamed(context, Routes.account);
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,21 +45,9 @@ class NavigationWidget extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(
-                icon: Icons.home_outlined,
-                label: 'Home',
-                index: 0,
-              ),
-              _buildNavItem(
-                icon: Icons.chat_bubble_outline,
-                label: 'Messages',
-                index: 1,
-              ),
-              _buildNavItem(
-                icon: Icons.person_outline,
-                label: 'Profile',
-                index: 2,
-              ),
+              _buildNavItem(context, Icons.home_outlined, 'Home', 0),
+              _buildNavItem(context, Icons.chat_bubble_outline, 'Messages', 1),
+              _buildNavItem(context, Icons.person_outline, 'Profile', 2),
             ],
           ),
         ),
@@ -52,15 +55,11 @@ class NavigationWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem({
-    required IconData icon,
-    required String label,
-    required int index,
-  }) {
+  Widget _buildNavItem(BuildContext context, IconData icon, String label, int index) {
     final bool isSelected = currentIndex == index;
 
     return InkWell(
-      onTap: () => onTap(index),
+      onTap: () => _navigate(context, index),
       borderRadius: BorderRadius.circular(16),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),

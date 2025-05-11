@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:openearth_mobile/configuration/environment.dart';
+import 'package:openearth_mobile/routes/routes.dart';
+import 'package:openearth_mobile/service/auth_service.dart';
 import 'package:openearth_mobile/service/currency_service.dart';
 import 'package:openearth_mobile/service/user_service.dart';
 import 'package:openearth_mobile/widget/currency_selector_button.dart';
@@ -16,6 +18,7 @@ class AccountScreen extends StatefulWidget {
 class _AccountScreenState extends State<AccountScreen> {
   final UserService _userService = UserService();
   final CurrencyService _currencyService = CurrencyService();
+  final AuthService _authService = AuthService();
 
   String? _userImageUrl;
   bool _isLoading = true;
@@ -46,7 +49,22 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   void _navigateToRents() {
-    Navigator.of(context).pushNamed('/rents');
+    Navigator.pushNamed(context, Routes.rents);
+  }
+
+  void _logout() async {
+    try {
+      await _authService.logout(context);
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        Routes.login,
+            (route) => false,
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error logging out: ${e.toString()}')),
+      );
+    }
   }
 
   @override
@@ -135,6 +153,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   // My Rents Setting
                   Card(
                     elevation: 0,
+                    margin: const EdgeInsets.only(bottom: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                       side: BorderSide(color: Colors.grey[200]!),
@@ -182,7 +201,55 @@ class _AccountScreenState extends State<AccountScreen> {
                     ),
                   ),
 
-                  // Other config options
+                  // Logout Card
+                  Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: Colors.grey[200]!),
+                    ),
+                    child: InkWell(
+                      onTap: _logout,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            Icon(Icons.logout, size: 24, color: Colors.red[400]),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Logout',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.grey[800],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Sign out from your account',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Icon(
+                              Icons.chevron_right,
+                              color: Colors.grey[400],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ],

@@ -7,6 +7,9 @@ class Rent {
   final int userId;
   final int houseId;
 
+  DateTime get startDateTime => DateTime.parse(startTime);
+  DateTime get endDateTime => DateTime.parse(endTime);
+
   Rent({
     required this.id,
     required this.price,

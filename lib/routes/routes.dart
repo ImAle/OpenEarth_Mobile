@@ -3,6 +3,7 @@ import 'package:openearth_mobile/screen/account_screen.dart';
 import 'package:openearth_mobile/screen/home_screen.dart';
 import 'package:openearth_mobile/screen/login_screen.dart';
 import 'package:openearth_mobile/screen/register_screen.dart';
+import 'package:openearth_mobile/screen/rent_screen.dart';
 
 class Routes {
   static const String login = '/login';
@@ -11,11 +12,13 @@ class Routes {
   static const String house = '/house';
   static const String account = '/account';
   static const String chat = '/chat';
+  static const String rents = '/rents';
 
   static final routes = <String, WidgetBuilder>{
     login: (context) => const LoginScreen(),
     register: (context) => const RegisterScreen(),
     home: (context) => const HomeScreen(),
     account: (context) => const AccountScreen(),
+    rents: (context) => const RentScreen(),
   };
 }

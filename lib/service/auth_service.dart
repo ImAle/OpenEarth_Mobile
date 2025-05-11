@@ -29,7 +29,7 @@ class AuthService {
 
   Future<void> logout(BuildContext context) async {
     await removeToken();
-    Navigator.of(context).pushReplacementNamed('/login');
+    Navigator.pushNamed(context, '/login');
   }
 
   // POST /api/auth/register

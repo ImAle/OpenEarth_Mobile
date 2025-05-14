@@ -1,21 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:openearth_mobile/configuration/environment.dart';
 import 'package:openearth_mobile/model/house_preview.dart';
+import 'package:openearth_mobile/screen/house_details_screen.dart';
 
 class HouseMapCard extends StatelessWidget {
   final HousePreview house;
-  final VoidCallback onTap;
 
   const HouseMapCard({
     Key? key,
     required this.house,
-    required this.onTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HouseDetailsScreen(houseId: house.id),
+            ),
+          );
+      },
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -85,7 +91,7 @@ class HouseMapCard extends StatelessWidget {
                     children: [
                       Text(
                         '${house.price} ${house.currency}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: environment.primaryColor,
                         ),

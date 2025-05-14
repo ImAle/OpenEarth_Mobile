@@ -9,7 +9,7 @@ class Picture {
 
   factory Picture.fromJson(Map<String, dynamic> json) {
     return Picture(
-      id: json['id'],
+      id: (json['id'] as num).toInt(),
       url: json['url'],
     );
   }

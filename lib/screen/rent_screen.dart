@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:openearth_mobile/configuration/environment.dart';
 import 'package:openearth_mobile/model/rent.dart';
+import 'package:openearth_mobile/screen/house_details_screen.dart';
 import 'package:openearth_mobile/service/auth_service.dart';
 import 'package:openearth_mobile/service/house_service.dart';
 import 'package:openearth_mobile/service/rent_service.dart';
@@ -13,7 +14,8 @@ class RentScreen extends StatefulWidget {
   State<RentScreen> createState() => _RentScreenState();
 }
 
-class _RentScreenState extends State<RentScreen> with SingleTickerProviderStateMixin {
+class _RentScreenState extends State<RentScreen>
+    with SingleTickerProviderStateMixin {
   final RentService _rentService = RentService();
   final HouseService _houseService = HouseService();
   final AuthService _authService = AuthService();
@@ -78,7 +80,8 @@ class _RentScreenState extends State<RentScreen> with SingleTickerProviderStateM
         _rents = List<Rent>.from(response['rents']
             .map((rentJson) => Rent.fromJson(rentJson))
             .toList());
-        _rents.sort((a, b) => b.startTime.compareTo(a.startTime)); // Sort by date, newest first
+        _rents.sort((a, b) =>
+            b.startTime.compareTo(a.startTime)); // Sort by date, newest first
       });
       await _loadHouseDetails();
     } catch (e) {
@@ -98,7 +101,8 @@ class _RentScreenState extends State<RentScreen> with SingleTickerProviderStateM
         _rents = List<Rent>.from(response['rents']
             .map((rentJson) => Rent.fromJson(rentJson))
             .toList());
-        _rents.sort((a, b) => b.startTime.compareTo(a.startTime)); // Sort by date, newest first
+        _rents.sort((a, b) =>
+            b.startTime.compareTo(a.startTime)); // Sort by date, newest first
       });
       await _loadHouseDetails();
     } catch (e) {
@@ -246,31 +250,34 @@ class _RentScreenState extends State<RentScreen> with SingleTickerProviderStateM
       ),
       body: _isLoading
           ? const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text(
-              'Loading rentals...',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 16,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text(
+                    'Loading rentals...',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
-      )
+            )
           : _rents.isEmpty
-          ? _buildEmptyState()
-          : FadeTransition(
-        opacity: _fadeInAnimation,
-        child: RefreshIndicator(
-          onRefresh: _userRole == 'GUEST' ? _loadGuestRents : _loadHostessRents,
-          child: _buildRentalsList(),
-        ),
-      ),
-      bottomSheet: _showCancelConfirmDialog ? _buildCancelConfirmDialog() : null,
+              ? _buildEmptyState()
+              : FadeTransition(
+                  opacity: _fadeInAnimation,
+                  child: RefreshIndicator(
+                    onRefresh: _userRole == 'GUEST'
+                        ? _loadGuestRents
+                        : _loadHostessRents,
+                    child: _buildRentalsList(),
+                  ),
+                ),
+      bottomSheet:
+          _showCancelConfirmDialog ? _buildCancelConfirmDialog() : null,
     );
   }
 
@@ -349,131 +356,142 @@ class _RentScreenState extends State<RentScreen> with SingleTickerProviderStateM
     final dateFormat = DateFormat('MMM dd, yyyy');
     final startDate = dateFormat.format(rent.startDateTime);
     final endDate = dateFormat.format(rent.endDateTime);
-    final canCancel = _userRole == 'GUEST' && status == 'pending' && !rent.cancelled;
+    final canCancel =
+        _userRole == 'GUEST' && status == 'pending' && !rent.cancelled;
 
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.shade200),
-      ),
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header with property name and status
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    houseName,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: _primaryColor,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                _buildStatusChip(status),
-              ],
-            ),
-
-            Divider(color: Colors.grey.shade200, height: 24),
-
-            // Rental details
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: _primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.date_range,
-                  color: Colors.blue[800],
-                ),
-              ),
-              title: const Text(
-                'Rental Period',
-                style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
-              ),
-              subtitle: Text(
-                '$startDate - $endDate',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                  color: Colors.black87,
-                ),
-              ),
-            ),
-
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.confirmation_number,
-                  color: Colors.blue[800],
-                ),
-              ),
-              title: const Text(
-                'Rental ID',
-                style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
-              ),
-              subtitle: Text(
-                '${rent.id}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                  color: Colors.black87,
-                ),
-              ),
-            ),
-
-            // Cancel Button (only for GUEST with pending rentals)
-            if (canCancel)
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => _showCancelConfirmation(rent),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red[600],
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    child: const Text(
-                      'Cancel Rental',
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HouseDetailsScreen(houseId: rent.houseId),
+          ),
+        );
+      },
+      child: Card(
+        elevation: 3,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.grey.shade200),
+        ),
+        margin: EdgeInsets.zero,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with property name and status
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      houseName,
                       style: TextStyle(
-                        color: Colors.white,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: _primaryColor,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  _buildStatusChip(status),
+                ],
+              ),
+
+              Divider(color: Colors.grey.shade200, height: 24),
+
+              // Rental details
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: _primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.date_range,
+                    color: Colors.blue[800],
+                  ),
+                ),
+                title: const Text(
+                  'Rental Period',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                ),
+                subtitle: Text(
+                  '$startDate - $endDate',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.confirmation_number,
+                    color: Colors.blue[800],
+                  ),
+                ),
+                title: const Text(
+                  'Rental ID',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                ),
+                subtitle: Text(
+                  '${rent.id}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+
+              // Cancel Button (only for GUEST with pending rentals)
+              if (canCancel)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => _showCancelConfirmation(rent),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red[600],
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: const Text(
+                        'Cancel Rental',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

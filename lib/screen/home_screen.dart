@@ -249,10 +249,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       if (_showMap) {
                         // Map view
-                        return MapWidget(
+                        return MapWidget.interactive(
                           houses: houses,
                           onHouseSelected: _navigateToHouseDetail,
-                          isInteractive: true,
                         );
                       } else {
                         // List view

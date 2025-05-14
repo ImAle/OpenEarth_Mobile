@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:openearth_mobile/configuration/environment.dart';
 import 'package:openearth_mobile/model/house_preview.dart';
 import 'package:openearth_mobile/model/currency.dart';
+import 'package:openearth_mobile/screen/house_details_screen.dart';
 import 'package:openearth_mobile/service/currency_service.dart';
 
 class HouseCard extends StatefulWidget {
@@ -65,9 +66,12 @@ class _HouseCardState extends State<HouseCard> {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-          if (widget.onTap != null) {
-            widget.onTap!(widget.house.id);
-          }
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HouseDetailsScreen(houseId: widget.house.id),
+            ),
+          );
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

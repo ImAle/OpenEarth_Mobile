@@ -13,10 +13,10 @@ class Review {
 
   factory Review.fromJson(Map<String, dynamic> json) {
     return Review(
-      id: json['id'],
+      id: (json['id'] as num).toInt(),
       comment: json['comment'],
-      houseId: json['houseId'],
-      userId: json['userId'],
+      houseId: (json['houseId'] as num).toInt(),
+      userId: (json['userId'] as num).toInt(),
     );
   }
 

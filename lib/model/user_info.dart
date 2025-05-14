@@ -1,5 +1,5 @@
 class UserInfo {
-  final String id;
+  final int id;
   final String username;
   final String firstName;
   final String lastName;

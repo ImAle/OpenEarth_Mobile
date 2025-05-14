@@ -14,7 +14,7 @@ class User {
   final List<HousePreview> houses;
   final List<Rent> rents;
   final List<Review> reviews;
-  final int creationDate;
+  final DateTime creationDate;
 
   User({
     required this.id,
@@ -44,7 +44,7 @@ class User {
       houses: (json['houses'] as List).map((e) => HousePreview.fromJson(e)).toList(),
       rents: (json['rents'] as List).map((e) => Rent.fromJson(e)).toList(),
       reviews: (json['reviews'] as List).map((e) => Review.fromJson(e)).toList(),
-      creationDate: json['creationDate'],
+      creationDate: DateTime.parse(json['creationDate']),
     );
   }
 
@@ -61,7 +61,7 @@ class User {
       'houses': houses.map((e) => e.toJson()).toList(),
       'rents': rents.map((e) => e.toJson()).toList(),
       'reviews': reviews.map((e) => e.toJson()).toList(),
-      'creationDate': creationDate,
+      'creationDate': creationDate.toIso8601String(),
     };
   }
 }

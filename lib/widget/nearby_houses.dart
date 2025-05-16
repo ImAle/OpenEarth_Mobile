@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:openearth_mobile/model/house_preview.dart';
-import 'package:openearth_mobile/widget/house_card.dart';
 import 'package:openearth_mobile/widget/nearby_house_card.dart';
 
 class NearbyHouses extends StatefulWidget {

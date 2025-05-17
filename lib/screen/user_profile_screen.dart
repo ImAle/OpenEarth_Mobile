@@ -8,6 +8,7 @@ import 'package:openearth_mobile/service/house_service.dart';
 import 'package:openearth_mobile/service/currency_service.dart';
 import 'package:openearth_mobile/widget/house_card.dart';
 import 'package:openearth_mobile/widget/review_card.dart';
+import 'package:openearth_mobile/widget/report_creation_widget.dart';
 
 class UserProfileScreen extends StatefulWidget {
   final int userId;
@@ -30,6 +31,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   List<HousePreview> _houses = [];
   bool _isLoading = true;
   String _currency = 'EUR'; // Default currency
+  bool _isReportModalVisible = false;
 
   @override
   void initState() {
@@ -72,6 +74,24 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
+  void _showReportModal() {
+    setState(() {
+      _isReportModalVisible = true;
+    });
+  }
+
+  void _hideReportModal() {
+    setState(() {
+      _isReportModalVisible = false;
+    });
+  }
+
+  void _navigateToChat() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Chat functionality coming soon')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -93,11 +113,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Main content
-            CustomScrollView(
+      body: Stack(
+        children: [
+          // Main content
+          SafeArea(
+            child: CustomScrollView(
               slivers: [
                 // Add space for the back button
                 const SliverToBoxAdapter(
@@ -109,6 +129,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: _buildUserProfileCard(),
+                  ),
+                ),
+
+                // Action buttons (Chat and Report)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: _buildActionButtons(),
                   ),
                 ),
 
@@ -127,32 +155,88 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 ),
               ],
             ),
+          ),
 
-            // Back button
+          // Back button
+          Positioned(
+            top: 16,
+            left: 16,
+            child: InkWell(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.8),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.arrow_back, color: Colors.black87),
+              ),
+            ),
+          ),
+
+          // Report Modal (if visible)
+          if (_isReportModalVisible && _user != null)
             Positioned(
-              top: 16,
-              left: 16,
-              child: InkWell(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.8),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(Icons.arrow_back, color: Colors.black87),
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: ReportCreationWidget(
+                reportedUserId: _user!.id,
+                onReportSuccess: _hideReportModal,
+                onCancel: _hideReportModal,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24.0),
+      child: Row(
+        children: [
+          // Chat Button
+          Expanded(
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.chat_bubble_outline, size: 18),
+              label: const Text('Chat'),
+              onPressed: _navigateToChat,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: environment.primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 12),
+          // Report Button
+          Expanded(
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.flag_outlined, size: 18),
+              label: const Text('Report'),
+              onPressed: _showReportModal,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red[700],
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

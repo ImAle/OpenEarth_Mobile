@@ -85,7 +85,6 @@ class _HouseDetailsScreenState extends State<HouseDetailsScreen> {
             .toList();
       });
     } catch (e) {
-      // Silently handle error, nearby houses are not critical
       print('No nearby houses to this one');
     }
   }

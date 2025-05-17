@@ -41,6 +41,7 @@ dependencies:
   flutter_map: ^4.0.0
   latlong2: ^0.8.1
   image_picker: ^1.0.4
+  webview_flutter: ^4.2.2
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +72,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/default_user.jpg
+    - assets/paypal_logo.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

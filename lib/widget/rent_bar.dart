@@ -3,7 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:openearth_mobile/configuration/environment.dart';
 import 'package:openearth_mobile/model/house.dart';
 import 'package:openearth_mobile/model/currency.dart';
+import 'package:openearth_mobile/model/rent_creation.dart';
 import 'package:openearth_mobile/service/currency_service.dart';
+import 'package:openearth_mobile/service/paypal_service.dart';
 
 class RentBar extends StatefulWidget {
   final House house;
@@ -21,12 +23,15 @@ class _RentBarState extends State<RentBar> {
   DateTime _startDate = DateTime.now().add(const Duration(days: 1));
   DateTime _endDate = DateTime.now().add(const Duration(days: 2));
   bool _isReservationModalOpen = false;
+  bool _isProcessingPayment = false;
   late CurrencyService _currencyService;
+  late PaypalService _paypalService;
 
   @override
   void initState() {
     super.initState();
     _currencyService = CurrencyService();
+    _paypalService = PaypalService();
   }
 
   String _getCurrencySymbol(String currencyCode) {
@@ -55,7 +60,6 @@ class _RentBarState extends State<RentBar> {
     return widget.house.price * _getNights();
   }
 
-  // Show reservation modal
   void _showReservationModal() {
     setState(() {
       _isReservationModalOpen = true;
@@ -80,14 +84,78 @@ class _RentBarState extends State<RentBar> {
   }
 
   void _handleReservation() {
-    Navigator.of(context).pop();
+    // Crear datos de la reserva
+    final rentData = RentCreation(
+      houseId: widget.house.id,
+      startTime: _startDate,
+      endTime: _endDate,
+    );
+
+    // Establecer estado de procesamiento
     setState(() {
-      _isReservationModalOpen = false;
+      _isProcessingPayment = true;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Reservation process will be implemented soon')),
-    );
+    // Cerrar el modal de reserva
+    Navigator.of(context).pop();
+
+    // Iniciar el proceso de pago con PayPal
+    _initiatePayPalPayment(rentData);
+  }
+
+  void _initiatePayPalPayment(RentCreation rentData) async {
+    final totalAmount = _getTotalPrice();
+    final description = "Booking ${widget.house.title} for ${_getNights()} nights";
+
+    try {
+      await _paypalService.initiatePaypalPayment(
+        context,
+        totalAmount,
+        widget.house.currency,
+        description,
+        rentData,
+            (String orderId) {
+          // Éxito en el pago
+          setState(() {
+            _isProcessingPayment = false;
+          });
+
+          // Mostrar mensaje de éxito
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('¡Reserva completada con éxito!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        },
+            () {
+          // Pago cancelado
+          setState(() {
+            _isProcessingPayment = false;
+          });
+
+          // Mostrar mensaje de cancelación
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('El pago fue cancelado'),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      // En caso de error, restablecemos el estado
+      setState(() {
+        _isProcessingPayment = false;
+      });
+
+      // Mostramos un mensaje de error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -148,7 +216,7 @@ class _RentBarState extends State<RentBar> {
 
             // Book button
             ElevatedButton(
-              onPressed: _showReservationModal,
+              onPressed: _isProcessingPayment ? null : _showReservationModal,
               style: ElevatedButton.styleFrom(
                 backgroundColor: environment.primaryColor,
                 foregroundColor: Colors.white,
@@ -157,7 +225,16 @@ class _RentBarState extends State<RentBar> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text(
+              child: _isProcessingPayment
+                  ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+                  : const Text(
                 'Book Now',
                 style: TextStyle(
                   fontSize: 16,
@@ -170,7 +247,6 @@ class _RentBarState extends State<RentBar> {
       ),
     );
   }
-
 
   Widget _buildReservationModal(BuildContext context, StateSetter setModalState) {
     final currencySymbol = _getCurrencySymbol(widget.house.currency);
@@ -324,7 +400,7 @@ class _RentBarState extends State<RentBar> {
               ),
               const SizedBox(height: 20),
 
-              // Reserve button
+              // Pay with PayPal button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -337,12 +413,21 @@ class _RentBarState extends State<RentBar> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text(
-                    'Continue to Payment',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Pay with ',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Image.asset(
+                        'assets/paypal_logo.png',
+                        height: 20,
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -428,5 +513,6 @@ class _RentBarState extends State<RentBar> {
         ),
       ),
     );
+
   }
 }

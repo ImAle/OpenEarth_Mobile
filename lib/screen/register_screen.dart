@@ -77,7 +77,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       Navigator.pushNamed(context, Routes.home);
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to register. Please check your information and try again.';
+        _errorMessage = 'Failed to register user';
       });
     } finally {
       setState(() {
@@ -188,11 +188,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   _buildTextField(
                                     controller: _usernameController,
                                     labelText: 'Username',
-                                    hintText: 'Choose a username',
+                                    hintText: 'Choose a username (5-15 characters)',
                                     prefixIcon: Icons.person_outline,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
-                                        return 'Please enter a username';
+                                        return 'Username is required';
+                                      }
+                                      if (value.length < 5) {
+                                        return 'Username must be at least 5 characters';
+                                      }
+                                      if (value.length > 15) {
+                                        return 'Username cannot exceed 15 characters';
                                       }
                                       return null;
                                     },
@@ -207,7 +213,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     prefixIcon: Icons.account_circle_outlined,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
-                                        return 'Please enter your first name';
+                                        return 'First name is required';
                                       }
                                       return null;
                                     },
@@ -222,7 +228,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     prefixIcon: Icons.account_circle_outlined,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
-                                        return 'Please enter your last name';
+                                        return 'Last name is required';
                                       }
                                       return null;
                                     },
@@ -233,15 +239,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   _buildTextField(
                                     controller: _emailController,
                                     labelText: 'Email',
-                                    hintText: 'Enter your email',
+                                    hintText: 'Enter your email address',
                                     prefixIcon: Icons.email_outlined,
                                     keyboardType: TextInputType.emailAddress,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
-                                        return 'Please enter your email';
+                                        return 'Email is required';
                                       }
-                                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                                        return 'Please enter a valid email';
+                                      // More comprehensive email validation regex
+                                      if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(value)) {
+                                        return 'Please enter a valid email address';
                                       }
                                       return null;
                                     },
@@ -252,15 +259,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   _buildTextField(
                                     controller: _passwordController,
                                     labelText: 'Password',
-                                    hintText: 'Create a password',
+                                    hintText: 'Create a password (min. 8 characters)',
                                     prefixIcon: Icons.lock_outline,
                                     obscureText: true,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
-                                        return 'Please enter a password';
+                                        return 'Password is required';
                                       }
-                                      if (value.length < 6) {
-                                        return 'Password must be at least 6 characters';
+                                      if (value.length < 8) {
+                                        return 'Password must be at least 8 characters';
                                       }
                                       return null;
                                     },
@@ -276,7 +283,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     obscureText: true,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
-                                        return 'Please confirm your password';
+                                        return 'Password confirmation is required';
                                       }
                                       if (value != _passwordController.text) {
                                         return 'Passwords do not match';

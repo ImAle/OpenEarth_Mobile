@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:openearth_mobile/configuration/environment.dart';
 import 'package:openearth_mobile/model/house_preview.dart';
 import 'package:openearth_mobile/model/user.dart';
+import 'package:openearth_mobile/screen/conversation_screen.dart';
+import 'package:openearth_mobile/service/auth_service.dart';
 import 'package:openearth_mobile/service/user_service.dart';
 import 'package:openearth_mobile/service/house_service.dart';
 import 'package:openearth_mobile/service/currency_service.dart';
@@ -25,6 +27,7 @@ class UserProfileScreen extends StatefulWidget {
 class _UserProfileScreenState extends State<UserProfileScreen> {
   final UserService _userService = UserService();
   final HouseService _houseService = HouseService();
+  final AuthService _authService = AuthService();
   final CurrencyService _currencyService = CurrencyService();
 
   User? _user;
@@ -86,10 +89,45 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     });
   }
 
-  void _navigateToChat() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Chat functionality coming soon')),
-    );
+  Future<void> _navigateToChat() async {
+    if (_user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User data not available')),
+      );
+      return;
+    }
+
+    try {
+      final currentUserId = await _authService.getMyId();
+      final currentUsername = await _authService.getMyUsername();
+
+      // Verifying the user is not trying with himself
+      if (currentUserId == _user!.id) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You cannot chat with yourself')),
+        );
+        return;
+      }
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ConversationScreen(
+            conversationId: 0,
+            otherUserId: _user!.id,
+            otherUsername: _user!.username,
+            userId: currentUserId!,
+            username: currentUsername!,
+          ),
+        ),
+      );
+
+    } catch (e) {
+      print('[ERROR] Error opening chat: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error opening chat')),
+      );
+    }
   }
 
   @override
@@ -258,7 +296,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 image: DecorationImage(
                   image: _user?.picture == null
                       ? const AssetImage('assets/default_user.jpg')
-                      : NetworkImage(environment.imageUrl + _user!.picture) as ImageProvider,
+                      : NetworkImage(environment.imageUrl + _user!.picture!) as ImageProvider,
                   fit: BoxFit.cover,
                 ),
               ),

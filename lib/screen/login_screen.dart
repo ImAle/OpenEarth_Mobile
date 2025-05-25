@@ -52,10 +52,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // Save the token
       await _authService.saveToken(response['token']);
+      // Save the rest of the data
+      await _authService.saveUsername(response['username']);
+      await _authService.saveMyId(response['id']);
+      await _authService.saveMyRole(response['role']);
 
       // Navigate to home screen
       Navigator.pushNamed(context, Routes.home);
     } catch (e) {
+      print(e);
       setState(() {
         _errorMessage = 'Invalid email or password. Please try again.';
       });

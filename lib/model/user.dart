@@ -10,7 +10,7 @@ class User {
   final String email;
   final String role;
   final bool enabled;
-  final String picture;
+  final String? picture;
   final List<HousePreview> houses;
   final List<Rent> rents;
   final List<Review> reviews;
@@ -32,6 +32,7 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
+    print(json);
     return User(
       id: json['id'],
       username: json['username'],

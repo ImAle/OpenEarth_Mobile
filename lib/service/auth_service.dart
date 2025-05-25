@@ -50,7 +50,7 @@ class AuthService {
   }
 
   // GET /api/auth/role
-  Future<dynamic> getRole() async {
+  Future<dynamic> getMyRole() async {
     try {
       final uri = Uri.parse('$baseUrl/role');
       final token = await retrieveToken();
@@ -137,6 +137,21 @@ class AuthService {
     await prefs.setString(key, token);
   }
 
+  Future<void> saveUsername(String username) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("username", username);
+  }
+
+  Future<void> saveMyId(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt("id", id);
+  }
+
+  Future<void> saveMyRole(String role) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("role", role);
+  }
+
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(key);
@@ -147,6 +162,16 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     final id = prefs.getInt('id');
     return id;
+  }
+
+  Future<String?> getMyUsername() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('username');
+  }
+
+  Future<String?> getRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('role');
   }
 
   Future<void> removeToken() async {

@@ -59,7 +59,7 @@ class _RentScreenState extends State<RentScreen>
     try {
       final response = await _authService.getRole();
       setState(() {
-        _userRole = response['role'];
+        _userRole = response!;
       });
 
       // Load rents based on user role

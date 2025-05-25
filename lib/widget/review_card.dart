@@ -46,7 +46,7 @@ class _ReviewCardState extends State<ReviewCard> {
             ),
           );
         }
-
+        
         if (snapshot.hasError) {
           return Card(
             child: Padding(
@@ -85,10 +85,9 @@ class _ReviewCardState extends State<ReviewCard> {
                     children: [
                       CircleAvatar(
                         radius: 24,
-                        backgroundImage: user.picture.isNotEmpty
-                            ? NetworkImage(environment.imageUrl + user.picture)
-                            : const AssetImage('assets/default_user.jpg')
-                                as ImageProvider,
+                        backgroundImage: (user.picture?.isNotEmpty ?? false)
+                            ? NetworkImage(environment.imageUrl + user.picture!)
+                            : const AssetImage('assets/default_user.jpg') as ImageProvider,
                       ),
                       const SizedBox(width: 12),
                       Expanded(

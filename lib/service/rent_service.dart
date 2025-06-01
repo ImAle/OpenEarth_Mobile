@@ -40,7 +40,6 @@ class RentService {
       final response = await http.get(url, headers: headers);
       return jsonDecode(response.body);
     } catch (error) {
-      print(error);
       throw error;
     }
   }

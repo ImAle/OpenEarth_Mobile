@@ -76,6 +76,7 @@ class _RentScreenState extends State<RentScreen>
   Future<void> _loadGuestRents() async {
     try {
       final response = await _rentService.getMyRents();
+      print(response);
       setState(() {
         _rents = List<Rent>.from(response['rents']
             .map((rentJson) => Rent.fromJson(rentJson))
@@ -85,7 +86,7 @@ class _RentScreenState extends State<RentScreen>
       });
       await _loadHouseDetails();
     } catch (e) {
-      _showMessage('Failed to load your rentals', isError: true);
+      //_showMessage('Failed to load your rentals', isError: true);
     } finally {
       setState(() {
         _isLoading = false;

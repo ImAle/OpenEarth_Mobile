@@ -59,10 +59,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // Navigate to home screen
       Navigator.pushNamed(context, Routes.home);
+
     } catch (e) {
-      print(e);
       setState(() {
-        _errorMessage = 'Invalid email or password. Please try again.';
+        _errorMessage = e.toString();
       });
     } finally {
       setState(() {

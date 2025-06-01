@@ -22,8 +22,10 @@ class AuthService {
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to login');
+    } else if (response.statusCode == 403){
+      throw "This user is disabled";
+    } else{
+      throw "Invalid email or password. Please try again.";
     }
   }
 

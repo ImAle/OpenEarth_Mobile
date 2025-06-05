@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:openearth_mobile/configuration/environment.dart';
 import 'package:openearth_mobile/model/rent.dart';
+import 'package:openearth_mobile/model/review_creation.dart';
 import 'package:openearth_mobile/screen/house_details_screen.dart';
 import 'package:openearth_mobile/service/auth_service.dart';
 import 'package:openearth_mobile/service/house_service.dart';
 import 'package:openearth_mobile/service/rent_service.dart';
+import 'package:openearth_mobile/service/review_service.dart';
+import 'package:openearth_mobile/service/user_service.dart';
 
 class RentScreen extends StatefulWidget {
   const RentScreen({Key? key}) : super(key: key);
@@ -19,14 +22,22 @@ class _RentScreenState extends State<RentScreen>
   final RentService _rentService = RentService();
   final HouseService _houseService = HouseService();
   final AuthService _authService = AuthService();
+  final ReviewService _reviewService = ReviewService();
+  final UserService _userService = UserService();
 
   List<Rent> _rents = [];
   Map<int, String> _houseNames = {};
+  List<dynamic> _userReviews = []; // Reviews del usuario
   String _userRole = "";
   bool _isLoading = true;
   bool _showCancelConfirmDialog = false;
+  bool _showReviewDialog = false;
   Rent? _selectedRent;
   final Color _primaryColor = environment.primaryColor;
+
+  // Review dialog controllers
+  final TextEditingController _reviewController = TextEditingController();
+  bool _isSubmittingReview = false;
 
   late AnimationController _animationController;
   late Animation<double> _fadeInAnimation;
@@ -52,6 +63,7 @@ class _RentScreenState extends State<RentScreen>
   @override
   void dispose() {
     _animationController.dispose();
+    _reviewController.dispose();
     super.dispose();
   }
 
@@ -62,6 +74,9 @@ class _RentScreenState extends State<RentScreen>
         _userRole = response!;
       });
 
+      // Cargar el perfil del usuario para obtener sus reviews
+      await _loadUserProfile();
+
       // Load rents based on user role
       if (_userRole == 'GUEST') {
         _loadGuestRents();
@@ -70,6 +85,18 @@ class _RentScreenState extends State<RentScreen>
       }
     } catch (e) {
       _showMessage('Failed to load user role', isError: true);
+    }
+  }
+
+  Future<void> _loadUserProfile() async {
+    try {
+      final response = await _userService.getProfile();
+      setState(() {
+        _userReviews = response['user']['reviews'] ?? [];
+      });
+    } catch (e) {
+      print('Error loading user profile: $e');
+      // No mostramos error al usuario, solo logueamos
     }
   }
 
@@ -107,7 +134,7 @@ class _RentScreenState extends State<RentScreen>
       });
       await _loadHouseDetails();
     } catch (e) {
-      _showMessage('Failed to load house rentals', isError: true);
+      //_showMessage('Failed to load house rentals', isError: true);
     } finally {
       setState(() {
         _isLoading = false;
@@ -156,6 +183,44 @@ class _RentScreenState extends State<RentScreen>
     }
   }
 
+  Future<void> _submitReview() async {
+    if (_reviewController.text.trim().isEmpty) {
+      _showMessage('Please enter a review comment', isError: true);
+      return;
+    }
+
+    if (_selectedRent == null) return;
+
+    try {
+      setState(() {
+        _isSubmittingReview = true;
+      });
+
+      final review = ReviewCreation(
+        comment: _reviewController.text.trim(),
+        houseId: _selectedRent!.houseId,
+      );
+
+      await _reviewService.create(review);
+
+      _showMessage('Review submitted successfully');
+
+      // Actualizar la lista de reviews del usuario para reflejar la nueva review
+      await _loadUserProfile();
+
+      setState(() {
+        _showReviewDialog = false;
+        _reviewController.clear();
+      });
+    } catch (e) {
+      _showMessage('Failed to submit review', isError: true);
+    } finally {
+      setState(() {
+        _isSubmittingReview = false;
+      });
+    }
+  }
+
   void _showMessage(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -177,22 +242,55 @@ class _RentScreenState extends State<RentScreen>
     });
   }
 
+  void _showReviewModal(Rent rent) {
+    setState(() {
+      _selectedRent = rent;
+      _reviewController.clear();
+      _showReviewDialog = true;
+    });
+  }
+
   String _getRentStatus(Rent rent) {
     if (rent.cancelled) {
       return 'cancelled';
     }
 
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
     final start = rent.startDateTime;
     final end = rent.endDateTime;
+    final endDate = DateTime(end.year, end.month, end.day);
 
     if (now.isBefore(start)) {
       return 'pending';
-    } else if (now.isAfter(end)) {
+    } else if (today.isAfter(endDate)) {
+      // Completed only if end date is in the past (not today)
       return 'completed';
     } else {
+      // Active if today is between start and end (inclusive of today)
       return 'active';
     }
+  }
+
+  bool _canReview(Rent rent) {
+    if (rent.cancelled || _userRole != 'GUEST') return false;
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final endDate = DateTime(rent.endDateTime.year, rent.endDateTime.month, rent.endDateTime.day);
+
+    // Can review if end date is today or in the future
+    final canReviewByDate = !today.isBefore(endDate);
+
+    // Check if user has already reviewed this house
+    final hasAlreadyReviewed = _hasReviewedHouse(rent.houseId);
+
+    return canReviewByDate && !hasAlreadyReviewed;
+  }
+
+  // Verificar si el usuario ya ha hecho review de esta casa
+  bool _hasReviewedHouse(int houseId) {
+    return _userReviews.any((review) => review['houseId'] == houseId);
   }
 
   Color _getStatusColor(String status) {
@@ -251,34 +349,37 @@ class _RentScreenState extends State<RentScreen>
       ),
       body: _isLoading
           ? const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text(
-                    'Loading rentals...',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text(
+              'Loading rentals...',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 16,
               ),
-            )
+            ),
+          ],
+        ),
+      )
           : _rents.isEmpty
-              ? _buildEmptyState()
-              : FadeTransition(
-                  opacity: _fadeInAnimation,
-                  child: RefreshIndicator(
-                    onRefresh: _userRole == 'GUEST'
-                        ? _loadGuestRents
-                        : _loadHostessRents,
-                    child: _buildRentalsList(),
-                  ),
-                ),
-      bottomSheet:
-          _showCancelConfirmDialog ? _buildCancelConfirmDialog() : null,
+          ? _buildEmptyState()
+          : FadeTransition(
+        opacity: _fadeInAnimation,
+        child: RefreshIndicator(
+          onRefresh: _userRole == 'GUEST'
+              ? _loadGuestRents
+              : _loadHostessRents,
+          child: _buildRentalsList(),
+        ),
+      ),
+      bottomSheet: _showCancelConfirmDialog
+          ? _buildCancelConfirmDialog()
+          : _showReviewDialog
+          ? _buildReviewDialog()
+          : null,
     );
   }
 
@@ -359,6 +460,7 @@ class _RentScreenState extends State<RentScreen>
     final endDate = dateFormat.format(rent.endDateTime);
     final canCancel =
         _userRole == 'GUEST' && status == 'pending' && !rent.cancelled;
+    final canReview = _canReview(rent);
 
     return InkWell(
       onTap: () {
@@ -466,29 +568,55 @@ class _RentScreenState extends State<RentScreen>
                 ),
               ),
 
-              // Cancel Button (only for GUEST with pending rentals)
-              if (canCancel)
+              // Action buttons
+              if (canCancel || canReview)
                 Padding(
                   padding: const EdgeInsets.only(top: 16),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => _showCancelConfirmation(rent),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red[600],
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                  child: Row(
+                    children: [
+                      // Cancel Button (only for GUEST with pending rentals)
+                      if (canCancel)
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => _showCancelConfirmation(rent),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red[600],
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
+                            child: const Text(
+                              'Cancel Rental',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                      child: const Text(
-                        'Cancel Rental',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+
+                      // Add spacing if both buttons are present
+                      if (canCancel && canReview) const SizedBox(width: 12),
+
+                      // Review Button
+                      if (canReview)
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _showReviewModal(rent),
+                            icon: const Icon(Icons.star, size: 18),
+                            label: const Text('Write Review'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue[600],
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+                    ],
                   ),
                 ),
             ],
@@ -592,6 +720,145 @@ class _RentScreenState extends State<RentScreen>
                     ),
                     child: const Text(
                       'Cancel Rental',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReviewDialog() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(24),
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.rate_review,
+                    color: Colors.blue,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Write a Review',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Share your experience at ${_houseNames[_selectedRent?.houseId] ?? "this property"}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            TextField(
+              controller: _reviewController,
+              maxLines: 4,
+              decoration: InputDecoration(
+                hintText: 'Tell others about your stay...',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: _primaryColor, width: 2),
+                ),
+                contentPadding: const EdgeInsets.all(16),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: _isSubmittingReview ? null : () {
+                      setState(() {
+                        _showReviewDialog = false;
+                        _reviewController.clear();
+                      });
+                    },
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      side: BorderSide(color: _primaryColor),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: _primaryColor,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _isSubmittingReview ? null : _submitReview,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue[600],
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    child: _isSubmittingReview
+                        ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                        : const Text(
+                      'Submit Review',
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
